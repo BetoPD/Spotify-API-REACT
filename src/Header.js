@@ -10,6 +10,7 @@ function Header({ token }) {
     const [songs, setSongs] = useState([]);
     const [songsIds, setSongsIds] = useState([]);
     const [playlist, setPlayList] = useState([]);
+    const [playlistIds, setPlayListIds] = useState([]);
 
     useEffect(() => {
         spotify.setAccessToken(token);
@@ -69,12 +70,22 @@ function Header({ token }) {
         };
     };
 
-    const onClick = ({ target }) => {
+    const addToPlaylist = ({ target }) => {
+
+        const getSongName = async (id) => {
+            try {
+                const songName = await spotify.getTrack(id)
+                    .then(response => response.name);    
+                setPlayList(prev => [...prev, songName]);
+            } catch (error) {
+                console.log(error);
+            };
+        };
         
         let alreadyIn = false; 
 
-        for(let i = 0; i < playlist.length; i++) {
-            if (playlist[i] === target.value) {
+        for(let i = 0; i < playlistIds.length; i++) {
+            if (playlistIds[i] === target.value) {
                 alreadyIn = true;
                 break;
             }
@@ -85,8 +96,21 @@ function Header({ token }) {
             return;
         }
 
-        setPlayList(prev => [...prev, target.value]);
+        getSongName(target.value);
+        setPlayListIds(prev => [...prev, target.value]);
 
+    };
+
+    const removeFromPlaylist = ({ target }) => {
+        
+        const deleteName = async ({ value }) => {
+            const name = await spotify.getTrack(value) 
+                .then(response => response.name);
+            
+            setPlayList(prev => prev.filter(x => x === name));
+        };
+        setPlayListIds(prev => prev.filter(x => x === target.value));
+        deleteName(target);
     };
 
     return (
@@ -99,17 +123,24 @@ function Header({ token }) {
                 value={input} 
                 onChange={e => handleChange(e.target.value)}
             />
-            <div className="Songs">
-                <ul>
-                    {songs.map((song, index) => {
-                        return (
-                            <li key={`${song}-${index}`}>
-                                {song}
-                                <button value={songsIds[index]} type='button' onClick={onClick}>Add to playlist</button>
-                            </li>
-                        );
-                    })}
-                </ul>
+            <div>
+                <div className="Songs">
+                    <ul>
+                        {songs.map((song, index) => {
+                            return (
+                                <li key={`${song}-${index}`}>
+                                    {song}
+                                    <button value={songsIds[index]} type='button' onClick={addToPlaylist}>Add to playlist</button>
+                                </li>
+                            );
+                        })}
+                    </ul>
+                </div>
+                <div className="Playlist">
+                    <ul>
+                        {playlist.map((song, index) => <li key={`${index}-${song}`}>{song}<button value={playlistIds[index]} type="button" onClick={removeFromPlaylist}>Remove from playlist</button></li>)}
+                    </ul>
+                </div>
             </div>
         </header>
     );
