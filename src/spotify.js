@@ -7,7 +7,10 @@ const scopes = [
     'user-read-recently-played',
     'user-read-playback-state',
     'user-top-read',
-    'user-modify-playback-state'
+    'user-modify-playback-state',
+    'playlist-modify-private',
+    'playlist-modify-public',
+    'app-remote-control'
 ];
 
 export const loginURL = `${endPoint}?client_id=${clientId}&redirect_uri=${redirectURL}&scope=${scopes.join("%20")}&response_type=token&show_dialog=true`;

@@ -1,6 +1,5 @@
 import React, {useState, useEffect} from "react";
 import SpotifyWebApi from "spotify-web-api-js";
-import Playlist from "./Playlist";
 
 const spotify = new SpotifyWebApi();
 
@@ -11,6 +10,7 @@ function Header({ token }) {
     const [songsIds, setSongsIds] = useState([]);
     const [playlist, setPlayList] = useState([]);
     const [playlistIds, setPlayListIds] = useState([]);
+    const [playlistName, setPlaylistName] = useState('');
 
     useEffect(() => {
         spotify.setAccessToken(token);
@@ -29,7 +29,7 @@ function Header({ token }) {
         }
 
         getName();
-    }, []);
+    }, [token]);
 
     const search = async (value) => {
 
@@ -107,10 +107,21 @@ function Header({ token }) {
             const name = await spotify.getTrack(value) 
                 .then(response => response.name);
             
-            setPlayList(prev => prev.filter(x => x === name));
+            setPlayList(prev => prev.filter(x => x !== name));
         };
-        setPlayListIds(prev => prev.filter(x => x === target.value));
+        setPlayListIds(prev => prev.filter(x => x !== target.value));
         deleteName(target);
+    };
+
+    const handleSubmition = () => {
+
+        if (playlistIds.length < 1) { 
+            alert("Add songs to the playlist!!");
+        } else if (!playlistName.replace(/\s/g, '').length) {
+            alert("Playlist does not have a name!!");
+        } else {
+            alert('Playlist created!!');
+        }
     };
 
     return (
@@ -137,9 +148,18 @@ function Header({ token }) {
                     </ul>
                 </div>
                 <div className="Playlist">
+                    <h3>Your Playlist</h3>
+                    <label htmlFor='playlist-name'>Playlist Name:</label>
+                    <input 
+                        id='playlist-name'
+                        type='text'
+                        value={playlistName}
+                        onChange={e => setPlaylistName(e.target.value)}
+                    />
                     <ul>
                         {playlist.map((song, index) => <li key={`${index}-${song}`}>{song}<button value={playlistIds[index]} type="button" onClick={removeFromPlaylist}>Remove from playlist</button></li>)}
                     </ul>
+                    <button type="button" onClick={handleSubmition}>Add Playlist to Spotify</button>
                 </div>
             </div>
         </header>
